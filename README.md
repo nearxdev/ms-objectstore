@@ -6,9 +6,9 @@ Role API:
  CRUD
 
 Role USER (para logados):
- GET Trilha/{id}: listar cursos paginados
- GET Curso/{id}: listar modulos
- GET Modulos/{id}: listar lições
+-  GET Trilha/{id}: listar cursos paginados
+-  GET Curso/{id}: listar modulos
+-  GET Modulos/{id}: listar lições
 
 Permit all:
  GET Trilha: listar trilhas paginadas com 3 cursos que sejam featured;
