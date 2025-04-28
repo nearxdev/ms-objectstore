@@ -45,11 +45,7 @@ public class S3StorageServiceImpl implements StorageService {
 
             s3.putObject(putOb, RequestBody.fromInputStream(inputStream, fileBytes.length));
 
-            // String url = "https://" + uploadRequest.bucket() + ".s3." +
-            // uploadRequest.region() + ".amazonaws.com/"
-            // + uploadRequest.folder() + "/" + uploadRequest.filename();
-
-            String url = "https://nearx-assets.s3.us-east-1.amazonaws.com/"
+            String url = "https://" + uploadRequest.bucket() + ".s3.us-east-1.amazonaws.com/"
                     + uploadRequest.folder() + "/" + uploadRequest.filename();
 
             PutS3ObjectResponse putS3ObjectResponse = new PutS3ObjectResponse();
@@ -65,7 +61,6 @@ public class S3StorageServiceImpl implements StorageService {
         } catch (S3Exception e) {
             log.error("Error uploading to S3: " + e.getMessage());
 
-            // Verificar se é um erro de permissão
             if (e.getMessage().contains("Access Denied") ||
                     e.getMessage().contains("Forbidden") ||
                     e.getMessage().contains("Not authorized") ||
