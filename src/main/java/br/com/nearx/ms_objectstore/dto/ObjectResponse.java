@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PutS3ObjectResponse {
-    private UUID key;
+public class ObjectResponse {
     private String url;
     private String type;
 }

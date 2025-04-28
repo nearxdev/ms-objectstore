@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.com.nearx.ms_objectstore.dto.PutS3ObjectResponse;
+import br.com.nearx.ms_objectstore.dto.ObjectResponse;
 import br.com.nearx.ms_objectstore.dto.UploadRequest;
 import br.com.nearx.ms_objectstore.service.StorageService;
 
@@ -21,7 +21,7 @@ public class StorageController {
     private StorageService storageService;
 
     @PostMapping
-    public ResponseEntity<PutS3ObjectResponse> uploadFile(
+    public ResponseEntity<ObjectResponse> uploadFile(
             @RequestPart("file") MultipartFile file,
             @RequestPart("request") UploadRequest request) {
 
@@ -29,7 +29,7 @@ public class StorageController {
             byte[] fileBytes = file.getBytes();
             String contentType = file.getContentType();
 
-            PutS3ObjectResponse response = storageService.uploadFile(request, fileBytes, contentType);
+            ObjectResponse response = storageService.uploadFile(request, fileBytes, contentType);
             return ResponseEntity.ok(response);
 
         } catch (IOException e) {
