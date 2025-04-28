@@ -20,11 +20,12 @@ public class AwsConfig {
 
     @Bean
     S3Client s3Client() {
-        AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(accessKey, secretKey);
         return S3Client.builder()
-                .region(Region.US_EAST_2)
-                .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+                .region(Region.US_EAST_1)
+                .credentialsProvider(StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(accessKey, secretKey)))
+                .serviceConfiguration(b -> b.pathStyleAccessEnabled(true))
                 .build();
     }
-    
+
 }
