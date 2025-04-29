@@ -11,20 +11,22 @@ import org.springframework.stereotype.Service;
 import br.com.nearx.ms_objectstore.dto.ObjectResponse;
 import br.com.nearx.ms_objectstore.dto.UploadRequest;
 import br.com.nearx.ms_objectstore.exception.NotPermissionException;
-import br.com.nearx.ms_objectstore.service.StorageService;
+import br.com.nearx.ms_objectstore.service.StoreService;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @Service
 @Slf4j
-public class S3StorageServiceImpl implements StorageService {
+public class StoreServiceImpl implements StoreService {
 
     @Autowired
     private S3Client s3;
 
+    @Override
     public ObjectResponse uploadFile(UploadRequest uploadRequest, byte[] fileBytes, String contentType) {
         try {
             Map<String, String> metadata = new HashMap<>();
@@ -67,6 +69,21 @@ public class S3StorageServiceImpl implements StorageService {
             }
             
             throw new RuntimeException("Falha ao fazer upload do arquivo para o S3: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void deleteS3Object(UploadRequest objectRequest) {
+        try {
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(objectRequest.bucket())
+                    .key(objectRequest.folder() + "/" + objectRequest.filename())
+                    .build();
+
+            s3.deleteObject(deleteObjectRequest);
+        } catch (S3Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to delete file from S3: " + e.getMessage(), e);
         }
     }
 }
