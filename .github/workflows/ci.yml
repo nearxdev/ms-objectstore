@@ -1,0 +1,36 @@
+name: ci
+on:
+  push:
+    branches: ['main']
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - uses: mr-smithers-excellent/docker-build-push@v6
+              name: Build & push Docker image
+              with:
+                image: ms-object-store
+                tags: latest
+                registry: ghcr.io/nearxdev
+                dockerfile: Dockerfile
+                username: nearxdev
+                password: ${{ secrets.GH_TOKEN }}
+
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            - name: executing remote ssh commands using password
+              uses: appleboy/ssh-action@v0.1.8
+              with:
+                host: ${{ secrets.HOST }}
+                username: ${{ secrets.USER }}
+                key: ${{ secrets.KEY }}
+                passphrase: ${{ secrets.PASSPHRASE }}
+                script: |
+                        cd /etc/nearx/ms-object-store
+                        sudo docker compose pull ms-object-store
+                        sudo docker compose up -d ms-object-store

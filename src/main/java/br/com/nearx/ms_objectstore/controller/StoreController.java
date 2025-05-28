@@ -19,7 +19,7 @@ import br.com.nearx.ms_objectstore.service.StoreService;
 @RestController
 @RequestMapping("store")
 public class StoreController {
-    
+
     @Autowired
     private StoreService service;
 
@@ -28,16 +28,8 @@ public class StoreController {
             @RequestPart("file") MultipartFile file,
             @RequestPart("request") UploadRequest request) {
 
-        try {
-            byte[] fileBytes = file.getBytes();
-            String contentType = file.getContentType();
-
-            ObjectResponse response = service.uploadFile(request, fileBytes, contentType);
-            return ResponseEntity.ok(response);
-
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        ObjectResponse response = service.uploadFile(request, file);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping

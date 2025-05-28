@@ -1,12 +1,14 @@
 package br.com.nearx.ms_objectstore.service.impl;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.com.nearx.ms_objectstore.dto.ObjectResponse;
 import br.com.nearx.ms_objectstore.dto.UploadRequest;
@@ -27,27 +29,30 @@ public class StoreServiceImpl implements StoreService {
     private S3Client s3;
 
     @Override
-    public ObjectResponse uploadFile(UploadRequest uploadRequest, byte[] fileBytes, String contentType) {
+    public ObjectResponse uploadFile(UploadRequest uploadRequest, MultipartFile file) {
         try {
+            String extension = file.getOriginalFilename().split("\\.")[1];
+            String contentType = "image/" + extension;
             Map<String, String> metadata = new HashMap<>();
             metadata.put("author", "Nearx");
             metadata.put("version", "1.0.0.0");
-            metadata.put("content-length", String.valueOf(fileBytes.length));
+            metadata.put("content-length", String.valueOf(file.getSize()));
+            metadata.put("content-type", contentType);
 
-            InputStream inputStream = new ByteArrayInputStream(fileBytes);
+            InputStream inputStream = new ByteArrayInputStream(file.getBytes());
 
             PutObjectRequest putOb = PutObjectRequest.builder()
                     .bucket(uploadRequest.bucket())
-                    .key(uploadRequest.folder() + "/" + uploadRequest.filename())
+                    .key(uploadRequest.folder() + "/" + uploadRequest.filename() + "." + extension)
                     .metadata(metadata)
                     .contentType(contentType)
-                    .contentLength(Long.valueOf(fileBytes.length))
+                    .contentLength(Long.valueOf(file.getSize()))
                     .build();
 
-            s3.putObject(putOb, RequestBody.fromInputStream(inputStream, fileBytes.length));
+            s3.putObject(putOb, RequestBody.fromInputStream(inputStream, file.getSize()));
 
             String url = "https://" + uploadRequest.bucket() + ".s3.us-east-1.amazonaws.com/"
-                    + uploadRequest.folder() + "/" + uploadRequest.filename();
+                    + uploadRequest.folder() + "/" + uploadRequest.filename() + "." + extension;
 
             ObjectResponse objectResponse = new ObjectResponse();
             objectResponse.setUrl(url);
@@ -60,14 +65,17 @@ public class StoreServiceImpl implements StoreService {
 
         } catch (S3Exception e) {
             log.error("Error uploading to S3: " + e.getMessage());
-            
+
             if (e.getMessage().contains("Access Denied") ||
                     e.getMessage().contains("Forbidden") ||
                     e.getMessage().contains("Not authorized") ||
                     e.getMessage().contains("Permission denied")) {
                 throw new NotPermissionException("Você não tem permissão para fazer upload para este bucket S3", e);
             }
-            
+
+            throw new RuntimeException("Falha ao fazer upload do arquivo para o S3: " + e.getMessage(), e);
+        } catch (IOException e) {
+            log.error("Error uploading to S3: " + e.getMessage());
             throw new RuntimeException("Falha ao fazer upload do arquivo para o S3: " + e.getMessage(), e);
         }
     }
